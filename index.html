@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+
+<div style="width: 40%; margin: auto;">
+    <form action="" style="width: 100%" class="todo-form">
+        <h3>Add Task</h3>
+        <input type="text" name="taskInput">
+        <button type="submit">Submit</button>
+    </form>
+
+    <div style="display: flex; justify-content: space-between; padding-top: 20px; padding-bottom: 10px;">
+        <div><label for="totalTask">Total Tasks</label>
+            <p id="totalTask">0</p></div>
+        <div><label for="completedTask">CompletedTask</label>
+            <p id="completedTask">0</p></div>
+        <div><label for="remainTask">Remain Task</label>
+            <p id="remainTask">0</p></div>
+    </div>
+
+    <hr>
+
+    <ul class="todo-list">
+
+    </ul>
+
+</div>
+
+
+<script type="text/javascript">
+
+
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+    console.log(tasks);
+
+
+    todo_input = document.querySelector('.todo-form input');
+    todo_form = document.querySelector('.todo-form');
+    todo_list = document.querySelector('.todo-list');
+    total_task = document.querySelector('#totalTask');
+    completed_task = document.querySelector('#completedTask');
+    remain_task = document.querySelector('#remainTask');
+    remove_btn = document.querySelector('.remove-btn');
+
+
+
+
+    if (localStorage.getItem('tasks')) {
+        tasks.map(function (task) {
+            createTask(task);
+        })
+        countTasks();
+    }
+
+
+    todo_list.addEventListener('click', (e) => {
+        if (e.target.classList.contains('remove-btn')) {
+            console.log('clicked');
+            const taskId = e.target.closest('li').id;
+            removeTask(taskId);
+        }
+    })
+
+    todo_form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        let id = new Date().getTime().toString();
+        const task = {
+            id: id,
+            content: todo_input.value,
+            isCompleted: false,
+        }
+        tasks.push(task);
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+        createTask(task);
+        todo_form.reset();
+        todo_input.focus();
+        countTasks(tasks);
+    });
+
+
+    todo_list.addEventListener('input', (e) => {
+        const taskId = e.target.closest('li').id;
+        updateTask(taskId, e.target);
+    });
+
+    function createTask(task) {
+        const taskElement = document.createElement('li');
+        taskElement.setAttribute('id', task.id);
+        if (taskElement.isCompleted)
+            taskElement.classList.add('completed');
+        const taskMarkup = `
+          <div>
+             <input type="checkbox" ${task.isCompleted ? "checked" : ""} name="tasks"><span>${task.content}</span>
+             <button type="button" class="remove-btn" id="myBtn">Delete</button>
+          </div>`;
+        taskElement.innerHTML = taskMarkup;
+        todo_list.appendChild(taskElement);
+    }
+
+    function countTasks() {
+        const completedTasks = tasks.filter((task) => task.isCompleted === true);
+        total_task.innerHTML = tasks.length;
+        completed_task.innerHTML = completedTasks.length;
+        remain_task.innerHTML = tasks.length - completedTasks.length;
+    }
+
+    function removeTask(taskId) {
+        tasks = tasks.filter((task) => task.id !== taskId)
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+        document.getElementById(taskId).remove();
+        countTasks(tasks);
+    }
+
+    function updateTask(taskId) {
+        const task = tasks.find((task) => task.id === taskId);
+        task.isCompleted = !task.isCompleted;
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+        countTasks();
+    }
+
+
+</script>
+</body>
+</html>
